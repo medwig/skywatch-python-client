@@ -1,0 +1,16 @@
+[paths]
+source =
+   src/skywatch
+   */site-packages/skywatch
+
+[run]
+branch = true
+source =
+    skywatch
+    tests
+parallel = true
+
+[report]
+show_missing = true
+precision = 2
+omit = *migrations*

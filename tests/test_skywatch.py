@@ -67,18 +67,26 @@ class Test_Models(unittest.TestCase):
     def test_models_response(self):
         """Test that a response is returned from format_response"""
         resp = 'test response msg'
-        assert models.Response(resp).format() is not None
+        assert models.Response(resp).formatted() is not None
 
-    def test_models_format_with_json(self):
+    def test_models_response_format_with_json(self):
         """Test that a json is returned as an object by response"""
         response = json.dumps({'body': 'json test body'})
-        assert isinstance(models.Response(response).format(), dict)
+        assert isinstance(models.Response(response).formatted(), dict)
 
-    def test_models_format_with_string(self):
+    def test_models_response_format_with_string(self):
         """Test that a non-json string is returned as string response"""
         response = 'string test body'
-        assert isinstance(models.Response(response).format(), str)
+        assert isinstance(models.Response(response).formatted(), str)
 
+    def test_models_request_format_with_string(self):
+        """Test that a call to the /data request formatter returns as expected"""
+        endpoint = '/data'
+        params = {'test_param': 'foo'}
+        body = None
+        expected = 'https://api.skywatch.co/data/test_param/foo/'
+        req = models.Request(endpoint=endpoint, params=params, body=body)
+        assert req.formatted() == expected
 
 
 class Test_Client(unittest.TestCase):
@@ -116,17 +124,30 @@ class Test_Client(unittest.TestCase):
         result = sky._polygon2str([[1, 1], [2, 2]])
         assert result == '1,1,2,2'
 
-#    @mock.patch('skywatch.client.Client._call_api', side_effect=mock__call_api)
-#    def test_search(self, mock_request):
-#        """Test that a search call handles input safely"""
-#        sky = skywatch.Client(api_key=VALID_API_KEY)
-#        request = {
-#            'location': [[10, 10], [11, 11]],
-#            'time': '2017-01'
-#        }
-#        result = sky.search(request)
-#        assert result == True
-#
+    @mock.patch('skywatch.client.Client._call_api', side_effect=mock__call_api)
+    def test_search(self, mock_request):
+        """Test that a search call handles required params"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        request = {
+            'location': [[10, 10], [11, 11]],
+            'time': '2017-01'
+        }
+        result = sky.search(request)
+        assert result == True
+
+    @mock.patch('skywatch.client.Client._call_api', side_effect=mock__call_api)
+    def test_search(self, mock_request):
+        """Test that a search handles additional call params"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        request = {
+            'location': [[10, 10], [11, 11]],
+            'time': '2017-01',
+            'resolution': 10
+        }
+        result = sky.search(request)
+        assert result == True
+
+
 
 
 

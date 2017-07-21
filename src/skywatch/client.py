@@ -3,13 +3,11 @@ from .exceptions import (InvalidAPIKey)
 from . import auth
 from . import models
 
-BASE_URL = 'https://api.skywatch.co/'
-
 
 class Client:
     """ Main client interface to skywatch API """
 
-    def __init__(self, api_key=None, base_url=BASE_URL):
+    def __init__(self, api_key=None, base_url=models.BASE_URL):
         """
         :param str api_key: API key to use. Defaults to environment variable.
         :param str base_url: The base URL to use. Optional, should not be needed.
@@ -38,11 +36,15 @@ class Client:
 
 
     def search(self, request):
-        """ Searches the data endpoint
-        :param request: see :ref:`api-search-request`
+        """ Searches the data endpoint for satellite imagery
+        :param request: sky.search({"location": "x1,y1,x2,y2..xn,yn", "time": "daterange", "addition_filters": "foo"})
+        :example request: sky.search({"location": "10,10,11,11", "time": "2017-01-01", "cloudcover": "10"})
         :returns: :py:class:`skywatch.models.JSON`
-        :raises skywatch.exceptions.APIException: On API error.
+        :raises skywatch.exceptions.APIException: On API error
         """
+        endpoint = '/data'
+        body = None
+        params = request
         if not isinstance(request, dict):
             raise TypeError('The search request parameters must be a dictionary, not {0}'.format(type(request)))
 
@@ -50,8 +52,7 @@ class Client:
         if isinstance(location, list):
             request['location'] = self._polygon2str(location)
 
-        url = BASE_URL + 'data/'
-        url += '/'.join([k + '/' + v for k, v in request.items()])
+        url = models.Request(endpoint, params=params, body=body).formatted()
         response = self._call_api('get', url)
-        return models.Response(response).format()
+        return models.Response(response).formatted()
 

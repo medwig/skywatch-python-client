@@ -14,7 +14,7 @@ import skywatch
 #    main([])
 
 INVALID_API_KEY = 'fake-api-key'
-VALID_API_KEY = auth.get_apikey_from_config()
+VALID_API_KEY = auth.get_api_key()
 
 GEOJSON = {
   "type": "Polygon",
@@ -35,6 +35,24 @@ def mock__call_api(*args, **kwargs):
     return True
 
 
+class Test_Auth(unittest.TestCase):
+    """Tests for `Client` class."""
+
+    def setUp(self):
+        """Set up test fixtures, if any."""
+
+    def tearDown(self):
+        """Tear down test fixtures, if any."""
+
+    # Test init of client instance
+    def test_auth__read_config_file(self):
+        """Test json file is read""" 
+        assert auth._read_config_file() is not None
+
+    def test_get_api_key(self):
+        """Test that api-key is loaded from config file"""
+        assert auth.get_api_key() is not None
+
 
 class Test_Client(unittest.TestCase):
     """Tests for `Client` class."""
@@ -51,17 +69,17 @@ class Test_Client(unittest.TestCase):
         sky = skywatch.Client(api_key=INVALID_API_KEY)
         assert sky.api_key == INVALID_API_KEY
 
-    def test_init_missing_apikey(self):
+    def test_init_apikey_isNone(self):
         """Passing an empty api-key raises exception - for now"""
         try:
             sky = skywatch.Client(api_key=None)
         except exceptions.InvalidAPIKey as e:
             assert str(e) == 'api_key is required'
 
-    def test_get_api_key_from_config(self):
-        """Failing to pass an api-key checks config file"""
+    def test_init_without_apikey(self):
+        """Tests that missing api-key is read from config file"""
         sky = skywatch.Client()
-        assert sky
+        assert sky.headers['x-api-key'] is not None
 
 
     # Test sky.search()

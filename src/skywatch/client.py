@@ -14,10 +14,10 @@ class Client:
         :param str base_url: The base URL to use. Optional, should not be needed.
         """
         try:
-            self.api_key = api_key or auth.get_apikey_from_config()
+            self.api_key = api_key or auth.get_api_key()
         except Exception as e:
             raise InvalidAPIKey(e)
-        self.headers = {'x-api-key': api_key}
+        self.headers = {'x-api-key': self.api_key}
 
 
     def _call_api(self, method, url, params=None, body=None, headers=None):

@@ -4,10 +4,12 @@
 import unittest
 import mock
 import pytest
+import json
 
 from skywatch.cli import main
 from skywatch import exceptions
 from skywatch import auth
+from skywatch import models
 import skywatch
 
 #def test_cli_main():
@@ -27,7 +29,7 @@ GEOJSON = {
       [15.4, 13.4]
     ]
   ]
-} 
+}
 
 
 # Mocks
@@ -36,7 +38,7 @@ def mock__call_api(*args, **kwargs):
 
 
 class Test_Auth(unittest.TestCase):
-    """Tests for `Client` class."""
+    """Tests for `Auth` class."""
 
     def setUp(self):
         """Set up test fixtures, if any."""
@@ -44,14 +46,39 @@ class Test_Auth(unittest.TestCase):
     def tearDown(self):
         """Tear down test fixtures, if any."""
 
-    # Test init of client instance
     def test_auth__read_config_file(self):
-        """Test json file is read""" 
+        """Test json file is read"""
         assert auth._read_config_file() is not None
 
     def test_get_api_key(self):
         """Test that api-key is loaded from config file"""
         assert auth.get_api_key() is not None
+
+
+class Test_Models(unittest.TestCase):
+    """Tests for `Models` class."""
+
+    def setUp(self):
+        """Set up test fixtures, if any."""
+
+    def tearDown(self):
+        """Tear down test fixtures, if any."""
+
+    def test_models_response(self):
+        """Test that a response is returned from format_response"""
+        resp = 'test response msg'
+        assert models.Response(resp).format() is not None
+
+    def test_models_format_with_json(self):
+        """Test that a json is returned as an object by response"""
+        response = json.dumps({'body': 'json test body'})
+        assert isinstance(models.Response(response).format(), dict)
+
+    def test_models_format_with_string(self):
+        """Test that a non-json string is returned as string response"""
+        response = 'string test body'
+        assert isinstance(models.Response(response).format(), str)
+
 
 
 class Test_Client(unittest.TestCase):
@@ -65,7 +92,7 @@ class Test_Client(unittest.TestCase):
 
     # Test init of client instance
     def test_init_with_apikey(self):
-        """Test that client instance contains passed api-key""" 
+        """Test that client instance contains passed api-key"""
         sky = skywatch.Client(api_key=INVALID_API_KEY)
         assert sky.api_key == INVALID_API_KEY
 
@@ -88,14 +115,14 @@ class Test_Client(unittest.TestCase):
         sky = skywatch.Client(api_key=VALID_API_KEY)
         result = sky._polygon2str([[1, 1], [2, 2]])
         assert result == '1,1,2,2'
-     
+
 #    @mock.patch('skywatch.client.Client._call_api', side_effect=mock__call_api)
 #    def test_search(self, mock_request):
 #        """Test that a search call handles input safely"""
 #        sky = skywatch.Client(api_key=VALID_API_KEY)
 #        request = {
 #            'location': [[10, 10], [11, 11]],
-#            'time': '2017-01' 
+#            'time': '2017-01'
 #        }
 #        result = sky.search(request)
 #        assert result == True
@@ -104,13 +131,22 @@ class Test_Client(unittest.TestCase):
 
 
     # INTEGRATION TESTS
+    def test_search_with_missing_params(self):
+        """Test a search call lacking time or location returns error message"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        request = {
+            'location': [[10, 10], [11, 11]]
+        }
+        result = sky.search(request)
+        assert not isinstance(result, list)
+
 
     def test_search_with_valid_request(self):
         """Test that a basic call returns list of results"""
         sky = skywatch.Client(api_key=VALID_API_KEY)
         request = {
             'location': [[10, 10], [11, 11]],
-            'time': '2017-01' 
+            'time': '2017-01'
         }
         result = sky.search(request)
         assert isinstance(result, list)

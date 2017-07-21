@@ -1,12 +1,13 @@
 import requests
 from .exceptions import (InvalidAPIKey)
 from . import auth
+from . import models
 
 BASE_URL = 'https://api.skywatch.co/'
 
 
 class Client:
-    """ Main client interface to skywatch API """    
+    """ Main client interface to skywatch API """
 
     def __init__(self, api_key=None, base_url=BASE_URL):
         """
@@ -26,16 +27,15 @@ class Client:
             headers.update(self.headers)
         else:
             headers = self.headers
-        print(method, url, headers)
         response = requests.request(method.upper(), url, headers=headers, params=params, data=body)
-        return response
+        return response.content
 
 
     def _polygon2str(self, polygon):
         """ Convertes a polygon list of lists to a flattened list """
         flatList = [value for point in polygon for value in point]
         return ','.join(map(str, flatList))
-        
+
 
     def search(self, request):
         """ Searches the data endpoint
@@ -53,5 +53,5 @@ class Client:
         url = BASE_URL + 'data/'
         url += '/'.join([k + '/' + v for k, v in request.items()])
         response = self._call_api('get', url)
-        return response.json()
+        return models.Response(response).format()
 

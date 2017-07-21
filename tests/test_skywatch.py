@@ -172,4 +172,15 @@ class Test_Client(unittest.TestCase):
         result = sky.search(request)
         assert isinstance(result, list)
 
+    def test_search_returns_empty_list(self):
+        """Test that a search outside of available data returns an empty list object"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        request = {
+            'location': [[10, 10], [11, 11]],
+            'time': '1914-06-28'
+        }
+        result = sky.search(request)
+        assert result == []
+
+
 

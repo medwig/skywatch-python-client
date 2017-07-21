@@ -36,13 +36,14 @@ class Client:
 
 
     def search(self, request):
-        """ Searches the data endpoint for satellite imagery
+        """ Searches the /data endpoint for satellite imagery
         :param request: sky.search({"location": "x1,y1,x2,y2..xn,yn", "time": "daterange", "addition_filters": "foo"})
         :example request: sky.search({"location": "10,10,11,11", "time": "2017-01-01", "cloudcover": "10"})
         :returns: :py:class:`skywatch.models.JSON`
         :raises skywatch.exceptions.APIException: On API error
         """
         endpoint = '/data'
+        method = 'get'
         body = None
         params = request
         if not isinstance(request, dict):
@@ -53,6 +54,26 @@ class Client:
             request['location'] = self._polygon2str(location)
 
         url = models.Request(endpoint, params=params, body=body).formatted()
-        response = self._call_api('get', url)
+        response = self._call_api(method, url)
         return models.Response(response).formatted()
+
+
+    def describe_aoi(self, aoi_id=None):
+        """ Returns the aoi configuration with the given aoi id. If no aoi id give then all aois configurations
+        associated with the user's api key are returned.
+        :param request: sky.describe_aoi(aoi_id=None)
+        :example request: sky.describe_aoi('aoi-id-42')
+        :example request: sky.describe_aoi()
+        :returns: :py:class:`skywatch.models.JSON`
+        :raises skywatch.exceptions.APIException: On API error
+        """
+        endpoint = '/aoi'
+        method = 'get'
+        body = None
+        params = aoi_id
+
+        url = models.Request(endpoint, params=params, body=body).formatted()
+        response = self._call_api(method, url)
+        return models.Response(response).formatted()
+
 

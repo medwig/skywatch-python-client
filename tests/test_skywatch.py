@@ -89,7 +89,7 @@ class Test_Models(unittest.TestCase):
         assert req.formatted() == expected
 
 
-class Test_Client(unittest.TestCase):
+class Test_Client_search(unittest.TestCase):
     """Tests for `Client` class."""
 
     def setUp(self):
@@ -148,10 +148,15 @@ class Test_Client(unittest.TestCase):
         assert result == True
 
 
+class Integration_Tests(unittest.TestCase):
+    """Tests for `Auth` class."""
 
+    def setUp(self):
+        """Set up test fixtures, if any."""
 
+    def tearDown(self):
+        """Tear down test fixtures, if any."""
 
-    # INTEGRATION TESTS
     def test_search_with_missing_params(self):
         """Test a search call lacking time or location returns error message"""
         sky = skywatch.Client(api_key=VALID_API_KEY)
@@ -182,5 +187,20 @@ class Test_Client(unittest.TestCase):
         result = sky.search(request)
         assert result == []
 
+    def test_aoi_describe_all(self):
+        """Test that an aoi config request without aoi_id returns a list"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        all_aois = sky.describe_aoi()
+        assert isinstance(all_aois, list)
 
+    def test_aoi_describe_aoi(self):
+        """Test that an aoi config request with aoi_id returns a dict"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        all_aois = sky.describe_aoi()
+        assert isinstance(all_aois[0], dict)
 
+    def test_aoi_create(self):
+        """Test that creating an aoi returns a dict"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        new_aoi = sky.create_aoi()
+        assert isinstance(new_aoi, dict)

@@ -45,8 +45,12 @@ class Request:
         self.params = params
 
     def _params2query(self, params):
-        paramString = ''.join(['{}/{}/'.format(k, v) for k, v in params.items()])
+        if params:
+            paramString = ''.join(['{}/{}/'.format(k, v) for k, v in params.items()])
+        else:
+            paramString = ''
         return paramString
+
 
     def formatted(self):
         """Formats a request to the the api"""

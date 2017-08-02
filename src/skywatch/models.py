@@ -26,13 +26,12 @@ class Response:
     def __init__(self, response):
         self.response = response
 
-
     def formatted(self):
         try:
+            #response = self.response.encode('utf-8')
             response = json.loads(self.response)
-        except Exception as e:
+        except (TypeError, ValueError):
             response = self.response
-        print(response)
         return response
 
 
@@ -45,15 +44,21 @@ class Request:
         self.params = params
 
     def _params2query(self, params):
-        if params:
+        if not params:
+            return ''
+        try:
             paramString = ''.join(['{}/{}/'.format(k, v) for k, v in params.items()])
-        else:
-            paramString = ''
-        return paramString
+        except AttributeError:
+            paramString = str(params)
 
+        return paramString
 
     def formatted(self):
         """Formats a request to the the api"""
+        if self.endpoint == '/aoi':
+            pass
+
         url = BASE_URL + self.endpoint + '/'
         url += self._params2query(self.params)
-        return url
+        body = self.body
+        return url, body

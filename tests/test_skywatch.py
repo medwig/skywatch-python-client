@@ -31,6 +31,15 @@ GEOJSON = {
   ]
 }
 
+AOI_DEFINITION = {
+    'ai_id': "154311a8-582a-11e7-b30d-7291b81e23e",
+    'frequency': 'weekly',
+    'location': GEOJSON,
+    'frequency': 'weekly',
+    'start_date': '2017-07-11',
+    'resolution': 10
+}
+
 
 # Mocks
 def mock__call_api(*args, **kwargs):
@@ -85,8 +94,8 @@ class Test_Models(unittest.TestCase):
         params = {'test_param': 'foo'}
         body = None
         expected = 'https://api.skywatch.co/data/test_param/foo/'
-        req = models.Request(endpoint=endpoint, params=params, body=body)
-        assert req.formatted() == expected
+        url, body = models.Request(endpoint=endpoint, params=params, body=body).formatted()
+        assert (url, body) == (expected, None)
 
 
 class Test_Client_search(unittest.TestCase):
@@ -148,8 +157,22 @@ class Test_Client_search(unittest.TestCase):
         assert result == True
 
 
+    # Test sky.describe_aoi
+    def test_describe_aoi_fails_given_no_argument(self):
+        """Test that describe_aoi without aoi_id raises a TypeError"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        with pytest.raises(TypeError):
+            sky.describe_aoi()
+
+   # Test sky.describe_aoi
+    def test_list_aoi_results_fails_given_no_argument(self):
+        """Test that list_aoi_results without aoi_id raises a TypeError"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        with pytest.raises(TypeError):
+            sky.list_aoi_results()
+
+
 class Integration_Tests(unittest.TestCase):
-    """Tests for `Auth` class."""
 
     def setUp(self):
         """Set up test fixtures, if any."""
@@ -166,16 +189,15 @@ class Integration_Tests(unittest.TestCase):
         result = sky.search(request)
         assert not isinstance(result, list)
 
-
     def test_search_with_valid_request(self):
-        """Test that a basic call returns list of results"""
-        sky = skywatch.Client(api_key=VALID_API_KEY)
-        request = {
-            'location': [[10, 10], [11, 11]],
-            'time': '2017-01'
-        }
-        result = sky.search(request)
-        assert isinstance(result, list)
+       """Test that a basic call returns list of results"""
+       sky = skywatch.Client(api_key=VALID_API_KEY)
+       request = {
+           'location': [[10, 10], [11, 11]],
+           'time': '2017-01'
+       }
+       result = sky.search(request)
+       assert isinstance(result, list)
 
     def test_search_returns_empty_list(self):
         """Test that a search outside of available data returns an empty list object"""
@@ -187,20 +209,24 @@ class Integration_Tests(unittest.TestCase):
         result = sky.search(request)
         assert result == []
 
-    def test_aoi_describe_all(self):
-        """Test that an aoi config request without aoi_id returns a list"""
+    def test_list_aois(self):
+        """Test that list_aoi returns a list"""
         sky = skywatch.Client(api_key=VALID_API_KEY)
-        all_aois = sky.describe_aoi()
-        assert isinstance(all_aois, list)
-
-    def test_aoi_describe_aoi(self):
-        """Test that an aoi config request with aoi_id returns a dict"""
-        sky = skywatch.Client(api_key=VALID_API_KEY)
-        all_aois = sky.describe_aoi()
-        assert isinstance(all_aois[0], dict)
+        aois = sky.list_aois()
+        assert isinstance(aois, list)
 
     def test_aoi_create(self):
-        """Test that creating an aoi returns a dict"""
+        """Test that creating an aoi returns a dict with aoi_id"""
         sky = skywatch.Client(api_key=VALID_API_KEY)
-        new_aoi = sky.create_aoi()
-        assert isinstance(new_aoi, dict)
+        new_aoi = sky.create_aoi(AOI_DEFINITION)
+        new_aoi_id = new_aoi['id']
+        assert new_aoi_id and isinstance(new_aoi, dict)
+
+    def test_list_aoi_results(self):
+        """Test that list_aoi_results returns a list"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        aoi_id = sky.list_aois()[0]['id']
+        results = sky.list_aoi_results(aoi_id)
+        assert isinstance(results, list)
+
+

@@ -21,14 +21,16 @@ AOI:
 class Client:
     """ Main client interface to skywatch API """
 
+    default_config = models.Configuration.default
+
     def __init__(self, api_key=None, base_url=models.BASE_URL):
         """
-        :param str api_key: API key to use. Defaults to environment variable.
+        :param str api_key: API key to use. If None then checks ~/skywatch.json for api-key
         :param str base_url: The base URL to use. Optional, should not be needed.
         """
         try:
             self.api_key = api_key or auth.get_api_key()
-        except Exception as e:
+        except (KeyError, IOError) as e:
             raise InvalidAPIKey(e)
         self.headers = {'x-api-key': self.api_key}
 
@@ -41,11 +43,12 @@ class Client:
             headers = self.headers
 
         print('Calling API with: method={method}, url={url}, headers={headers}, params={params}, body={body}'.format(**locals()))
-        if method == 'GET':
-            response = requests.get(url, headers=headers, params=params)
-        if method == 'POST':
-            response = requests.post(url, headers=headers, json=body)
-        #print('Response from API: {}'.format(response.content))
+        if method in ('PUT', 'POST'):
+            response = requests.request(method, url, headers=headers, json=body)
+        else:
+            response = requests.request(method, url, headers=headers, params=params)
+
+        print('Response from API: {}'.format(response.content))
         return response.content
 
 
@@ -154,4 +157,35 @@ class Client:
         response = self._call_api(method, url)
         return models.Response(response).formatted()
 
+
+    def delete_aoi(self, aoi_id):
+        """ Deletes the pipeline with the aoi_id.
+        :param request: sky.delete_aoi(aoi_id=None)
+        :example request: sky.aoi_results('aoi-id-42')
+        :returns: :py:class:`skywatch.models.JSON`
+        :raises skywatch.exceptions.APIException: On API error
+        """
+        endpoint = '/aoi'
+        method = 'DELETE'
+        params = aoi_id
+
+        url, _body = models.Request(endpoint, params=params).formatted()
+        response = self._call_api(method, url)
+        return models.Response(response).formatted()
+
+
+    def update_aoi(self, aoi_id, configuration):
+        """ Updates the pipeline definition with the aoi_id.
+        :param request: sky.update_aoi(aoi_id=None, configuration={})
+        :example request: sky.update_aoi(aoi_id='aoi-id-42', configuration={'frequency': 'weekly', 'resolution': 10})
+        :returns: :py:class:`skywatch.models.JSON`
+        :raises skywatch.exceptions.APIException: On API error
+        """
+        endpoint = '/aoi'
+        method = 'PUT'
+        params = aoi_id
+
+        url, body = models.Request(endpoint, params=params, body=configuration).formatted()
+        response = self._call_api(method, url, body=body)
+        return models.Response(response).formatted()
 

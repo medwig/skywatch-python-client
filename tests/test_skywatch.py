@@ -18,6 +18,43 @@ import skywatch
 INVALID_API_KEY = 'fake-api-key'
 VALID_API_KEY = auth.get_api_key()
 
+FULL_GEOJSON = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.54248809814453,
+              43.448432557680064
+            ],
+            [
+              -80.49270629882812,
+              43.448432557680064
+            ],
+            [
+              -80.49270629882812,
+              43.47883342917123
+            ],
+            [
+              -80.54248809814453,
+              43.47883342917123
+            ],
+            [
+              -80.54248809814453,
+              43.448432557680064
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
+
 GEOJSON = {
   "type": "Polygon",
   "coordinates": [
@@ -34,7 +71,7 @@ GEOJSON = {
 AOI_DEFINITION = {
     'ai_id': "154311a8-582a-11e7-b30d-7291b81e23e",
     'frequency': 'weekly',
-    'location': GEOJSON,
+    'location': FULL_GEOJSON,
     'frequency': 'weekly',
     'start_date': '2017-07-11',
     'resolution': 10
@@ -215,18 +252,46 @@ class Integration_Tests(unittest.TestCase):
         aois = sky.list_aois()
         assert isinstance(aois, list)
 
-    def test_aoi_create(self):
+    def test_aoi_create_with_geojson(self):
         """Test that creating an aoi returns a dict with aoi_id"""
         sky = skywatch.Client(api_key=VALID_API_KEY)
         new_aoi = sky.create_aoi(AOI_DEFINITION)
+        print(new_aoi)
         new_aoi_id = new_aoi['id']
         assert new_aoi_id and isinstance(new_aoi, dict)
 
-    def test_list_aoi_results(self):
-        """Test that list_aoi_results returns a list"""
+    def test_aoi_create_with_polygon(self):
+        """Test that creating an aoi returns a dict with aoi_id"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        aoi_def = AOI_DEFINITION.copy()
+        aoi_def['location'] = GEOJSON
+        new_aoi = sky.create_aoi(aoi_def)
+        print(new_aoi)
+        new_aoi_id = new_aoi['id']
+        assert new_aoi_id and isinstance(new_aoi, dict)
+
+    def test_aoi_delete(self):
+        """Test that deleting an aoi returns a dict with aoi_id"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        new_aoi = sky.create_aoi(AOI_DEFINITION)
+        new_aoi_id = new_aoi['id']
+        resp = sky.delete_aoi(new_aoi_id)
+        assert resp['delete'] == True
+
+    def test_aoi_delete(self):
+        """Test that trying to delete a non-existant aoi returns an error string"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        new_aoi = sky.create_aoi(AOI_DEFINITION)
+        resp = sky.delete_aoi('fake-aoi-id')
+        print(resp)
+        assert resp == 'AOI id does not exist'
+
+    def test_update_aoi_results(self):
+        """Test that update_aoi returns a dict"""
         sky = skywatch.Client(api_key=VALID_API_KEY)
         aoi_id = sky.list_aois()[0]['id']
-        results = sky.list_aoi_results(aoi_id)
-        assert isinstance(results, list)
+        resp = sky.update_aoi(aoi_id=aoi_id, configuration={'resolution': 10})
+        print(resp)
+        assert resp['resolution'] == 10
 
 

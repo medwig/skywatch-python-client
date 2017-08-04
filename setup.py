@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name='skywatch',
-    version='0.2.0',
+    version='0.2.1',
     license='Apache Software License 2.0',
     description='Python client to access Skywatch API',
     long_description='%s\n%s' % (

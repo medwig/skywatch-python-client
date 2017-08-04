@@ -21,7 +21,7 @@ AOI:
 class Client:
     """ Main client interface to skywatch API """
 
-    default_config = models.Configuration.default
+    default_aoi_config = models.Configuration.aoi_default
 
     def __init__(self, api_key=None, base_url=models.BASE_URL):
         """
@@ -103,7 +103,6 @@ class Client:
         associated with the user's api key are returned.
         :param request: sky.describe_aoi(aoi_id=None)
         :example request: sky.describe_aoi('aoi-id-42')
-        :example request: sky.describe_aoi()
         :returns: :py:class:`skywatch.models.JSON`
         :raises skywatch.exceptions.APIException: On API error
         """
@@ -187,5 +186,37 @@ class Client:
 
         url, body = models.Request(endpoint, params=params, body=configuration).formatted()
         response = self._call_api(method, url, body=body)
+        return models.Response(response).formatted()
+
+
+    def list_algorithms(self):
+        """ show all algorithms that can be added to a pipeline
+        :param request: sky.list_algorithms()
+        :returns: :py:class:`skywatch.models.JSON`
+        :raises skywatch.exceptions.APIException: On API error
+        """
+        endpoint = '/ai'
+        method = 'GET'
+        params = None
+
+        url, _body = models.Request(endpoint, params=params).formatted()
+        response = self._call_api(method, url)
+        return models.Response(response).formatted()
+
+
+    def describe_algorithm(self, ai_id):
+        """ Returns the algorithm configuration with the given ai id
+        :param request: sky.describe_agorithm(ai_id=None)
+        :example request: sky.describe_algorithm('ai-id-42')
+        :returns: :py:class:`skywatch.models.JSON`
+        :raises skywatch.exceptions.APIException: On API error
+        """
+        endpoint = '/ai'
+        method = 'GET'
+        body = None
+        params = ai_id
+
+        url, _body = models.Request(endpoint, params=params).formatted()
+        response = self._call_api(method, url)
         return models.Response(response).formatted()
 

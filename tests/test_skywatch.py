@@ -276,6 +276,7 @@ class Integration_Tests(unittest.TestCase):
         new_aoi = sky.create_aoi(AOI_DEFINITION)
         new_aoi_id = new_aoi['id']
         resp = sky.delete_aoi(new_aoi_id)
+        print(resp)
         assert resp['delete'] == True
 
     def test_aoi_delete(self):
@@ -293,5 +294,19 @@ class Integration_Tests(unittest.TestCase):
         resp = sky.update_aoi(aoi_id=aoi_id, configuration={'resolution': 10})
         print(resp)
         assert resp['resolution'] == 10
+
+    def test_list_algorithms(self):
+        """Test that list_algorithms returns a list"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        ais = sky.list_algorithms()
+        assert isinstance(ais, list)
+
+    def test_describe_algorithm(self):
+        """Test that describe_algorithm returns a dict"""
+        sky = skywatch.Client(api_key=VALID_API_KEY)
+        id = sky.list_algorithms()[0]['id']
+        ai = sky.describe_algorithm(id)
+        print(ai)
+        assert isinstance(ai, dict) and ai['id']
 
 

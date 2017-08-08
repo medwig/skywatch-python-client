@@ -43,13 +43,13 @@ class Client:
         else:
             headers = self.headers
 
-        print('Calling API with: method={method}, url={url}, headers={headers}, params={params}, body={body}'.format(**locals()))
+        #print('Calling API with: method={method}, url={url}, headers={headers}, params={params}, body={body}'.format(**locals()))
         if method in ('PUT', 'POST'):
             response = requests.request(method, url, headers=headers, json=body)
         else:
             response = requests.request(method, url, headers=headers, params=params)
 
-        print('Response from API: {}'.format(response.content))
+        #print('Response from API: {}'.format(response.content))
         return response.content
 
 

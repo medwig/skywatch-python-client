@@ -30,7 +30,8 @@ class Client:
         """
         try:
             self.api_key = api_key or auth.get_api_key()
-        except (KeyError, IOError) as e:
+            assert self.api_key is not None
+        except (AssertionError, KeyError, IOError) as e:
             raise InvalidAPIKey(e)
         self.headers = {'x-api-key': self.api_key}
 
@@ -143,8 +144,8 @@ class Client:
 
     def list_aoi_results(self, aoi_id):
         """ Returns the pipeline results for the given aoi id.
-        :param request: sky.aoi_results(aoi_id=None)
-        :example request: sky.aoi_results('aoi-id-42')
+        :param request: sky.list_aoi_results(aoi_id=None)
+        :example request: sky.list_aoi_results('aoi-id-42')
         :returns: :py:class:`skywatch.models.JSON`
         :raises skywatch.exceptions.APIException: On API error
         """
@@ -160,7 +161,7 @@ class Client:
     def delete_aoi(self, aoi_id):
         """ Deletes the pipeline with the aoi_id.
         :param request: sky.delete_aoi(aoi_id=None)
-        :example request: sky.aoi_results('aoi-id-42')
+        :example request: sky.delete_aoi('aoi-id-42')
         :returns: :py:class:`skywatch.models.JSON`
         :raises skywatch.exceptions.APIException: On API error
         """

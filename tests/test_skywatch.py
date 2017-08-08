@@ -85,6 +85,10 @@ AOI_DEFINITION = {
 def mock__call_api(*args, **kwargs):
     return True
 
+def mock__returns_none(*args, **kwargs):
+    return None
+
+
 
 class Test_Auth(unittest.TestCase):
     """Tests for `Auth` class."""
@@ -153,10 +157,11 @@ class Test_Client_search(unittest.TestCase):
         sky = skywatch.Client(api_key=INVALID_API_KEY)
         assert sky.api_key == INVALID_API_KEY
 
-    def test_init_apikey_isNone(self):
-        """Passing an empty api-key raises exception - for now"""
+    @mock.patch('skywatch.auth.get_api_key', side_effect=mock__returns_none)
+    def test_init_apikey_isNone(self, mock_request):
+        """Passing an empty api-key with no config key present raises exception"""
         with pytest.raises(exceptions.InvalidAPIKey):
-            skywatch.Client(api_key=None)
+            print(skywatch.Client(api_key=None))
 
     # Test sky.search()
     def test_polygon2str(self):
